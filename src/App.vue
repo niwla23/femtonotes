@@ -6,7 +6,7 @@ import MarkdownLine from './components/MarkdownLine.vue';
 const editor: Ref<null | HTMLDivElement> = ref(null)
 const lines = ref(marked.lexer(
   `# heading
-This document is for demonstartion of the editor only.
+This \`document\` is for _demonstartion_ of the editor only.
 
 ## Heading 2
 
@@ -47,13 +47,13 @@ const getContent = () => {
   })
 
 
-  console.log(result)
   return result.join("\n")
 }
 
-const handleChange = () => {
+const handleChange = (e: KeyboardEvent) => {
+  // if (e)
+
   const x = getContent()
-  console.log(x)
   lines.value = marked.lexer(x, { gfm: true, breaks: true })
 
   let newTokens: marked.Token[] = []
@@ -61,32 +61,45 @@ const handleChange = () => {
     newTokens = newTokens.concat(splitToken(x))
   }
 
-  console.log("newTokens", newTokens)
+  // @ts-ignore
   lines.value = newTokens
 
-  console.log(lines.value)
+  // delete lines inserted by the browser
+  for (let line of Array.from(document.getElementsByClassName("line"))) {
+    let firstChildSaved = false
+    for (let child of Array.from(line.children)) {
+      if (firstChildSaved && child.textContent!.trim().length > 0) {
+      console.log("d", child.textContent?.trim())
+
+        line.removeChild(child)
+      }
+      firstChildSaved = true
+    }
+  }
 }
 
 </script>
 
 <template>
-  <div id="editor" ref="editor" class="bg-gray-800 text-white h-screen p-16 w-full" @keyup="handleChange"
-    contenteditable>
-    <div v-for="line in lines" class="outline-none line ">
-      <h1 class="font-bold text-2xl w-full underline py-4" v-if="line.type === 'heading' && line.depth === 1">
-        {{line.raw}}</h1>
-      <h2 class="font-bold text-xl underline py-3" v-else-if="line.type === 'heading' && line.depth === 2">{{line.raw}}
-      </h2>
-      <h2 class="font-bold text-lg underline py-2" v-else-if="line.type === 'heading' && line.depth === 3">{{line.raw}}
-      </h2>
-      <blockquote class="pl-2 border-l-2" v-else-if="line.type === 'blockquote'">{{line.raw}}</blockquote>
-      <p v-else>
-        <MarkdownLine :line="line" />
-      </p>
-      <!-- <br />
-      <br /> -->
-
-    </div>
+  <div class="bg-gray-800 flex justify-center outline-none ">
+    <main id="editor" ref="editor" class=" text-white h-screen p-8 max-w-[900px] w-full outline-none "
+      @keyup="handleChange" contenteditable>
+      <div v-for="line in lines" class="line ">
+        <h1 class="font-bold text-2xl w-full underline py-4" v-if="line.type === 'heading' && line.depth === 1">
+          {{line.raw}}
+        </h1>
+        <h2 class="font-bold text-xl underline py-3" v-else-if="line.type === 'heading' && line.depth === 2">
+          {{line.raw}}
+        </h2>
+        <h2 class="font-bold text-lg underline py-2" v-else-if="line.type === 'heading' && line.depth === 3">
+          {{line.raw}}
+        </h2>
+        <blockquote class="pl-2 border-l-2" v-else-if="line.type === 'blockquote'">{{line.raw}}</blockquote>
+        <p class="realline" v-else>
+          <MarkdownLine :line="line" />
+        </p>
+      </div>
+    </main>
   </div>
 </template>
 
