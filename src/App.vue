@@ -2,8 +2,10 @@
 import { Ref, ref } from 'vue';
 import { marked } from "marked"
 import MarkdownLine from './components/MarkdownLine.vue';
+// import { Cursor } from './cursorHelpers'
 
 const editor: Ref<null | HTMLDivElement> = ref(null)
+const cursorPos = ref(0)
 const lines = ref(marked.lexer(
   `# heading
 This \`document\` is for _demonstartion_ of the editor only.
@@ -51,7 +53,12 @@ const getContent = () => {
 }
 
 const handleChange = (e: KeyboardEvent) => {
-  // if (e)
+  // Cursor.setCurrentCursorPosition(cursorPos.value + 1, editor.value);
+  // editor.value?.focus();
+
+  // cursorPos.value = Cursor.getCurrentCursorPosition(editor.value);
+
+
 
   const x = getContent()
   lines.value = marked.lexer(x, { gfm: true, breaks: true })
@@ -69,14 +76,18 @@ const handleChange = (e: KeyboardEvent) => {
     let firstChildSaved = false
     for (let child of Array.from(line.children)) {
       if (firstChildSaved && child.textContent!.trim().length > 0) {
-      console.log("d", child.textContent?.trim())
+        console.log("d", child.textContent?.trim())
 
         line.removeChild(child)
       }
       firstChildSaved = true
     }
   }
+  // setTimeout(() => {
+
+  // }, 3);
 }
+
 
 </script>
 
@@ -84,20 +95,22 @@ const handleChange = (e: KeyboardEvent) => {
   <div class="bg-gray-800 flex justify-center outline-none ">
     <main id="editor" ref="editor" class=" text-white h-screen p-8 max-w-[900px] w-full outline-none "
       @keyup="handleChange" contenteditable>
-      <div v-for="line in lines" class="line ">
-        <h1 class="font-bold text-2xl w-full underline py-4" v-if="line.type === 'heading' && line.depth === 1">
-          {{line.raw}}
-        </h1>
-        <h2 class="font-bold text-xl underline py-3" v-else-if="line.type === 'heading' && line.depth === 2">
-          {{line.raw}}
-        </h2>
-        <h2 class="font-bold text-lg underline py-2" v-else-if="line.type === 'heading' && line.depth === 3">
-          {{line.raw}}
-        </h2>
-        <blockquote class="pl-2 border-l-2" v-else-if="line.type === 'blockquote'">{{line.raw}}</blockquote>
-        <p class="realline" v-else>
-          <MarkdownLine :line="line" />
-        </p>
+      <div>
+        <div v-for="line in lines" class="line ">
+          <h1 class="font-bold text-2xl w-full underline py-4" v-if="line.type === 'heading' && line.depth === 1">
+            {{line.raw}}
+          </h1>
+          <h2 class="font-bold text-xl underline py-3" v-else-if="line.type === 'heading' && line.depth === 2">
+            {{line.raw}}
+          </h2>
+          <h2 class="font-bold text-lg underline py-2" v-else-if="line.type === 'heading' && line.depth === 3">
+            {{line.raw}}
+          </h2>
+          <blockquote class="pl-2 border-l-2" v-else-if="line.type === 'blockquote'">{{line.raw}}</blockquote>
+          <p class="realline" v-else>
+            <MarkdownLine :line="line" />
+          </p>
+        </div>
       </div>
     </main>
   </div>
